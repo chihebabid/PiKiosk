@@ -42,10 +42,10 @@ namespace pitools {
 
         private:
             const uint8_t mDataPin;
-
+            DHT11_ERRORS mError {DHT11_ERRORS::NO_ERROR};
             std::unique_ptr<gpiod::line_request> mLine{};
 
-            DHT11_ERRORS mError {DHT11_ERRORS::NO_ERROR};
+
 
 
             void SendStartSignal();
@@ -63,14 +63,10 @@ namespace pitools {
              */
             dht11_data_t ProcessData(uint64_t Data);
 
-            /*
-             * Calculates the checksum for the data to make sure there was no error during data transmission.
-             */
+
             uint8_t CalculateParity(uint8_t HumidityHigh, uint8_t HumidityLow,
                                     uint8_t TemperatureHigh, uint8_t TemperatureLow);
-            /*
-             * @brief Return the error code
-             */
+
             DHT11_ERRORS getError();
 
         };
