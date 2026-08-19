@@ -62,7 +62,7 @@ namespace pitools {
         return mLabel;
     }
 
-    // In your GpioManager / GPIODevice class:
+
     std::unique_ptr<gpiod::line_request> GpioManager::requestOutputPin(unsigned int pin, gpiod::line::value initVal,
                                                                        const std::string &consumer) {
         gpiod::line_config cfg;
@@ -71,7 +71,17 @@ namespace pitools {
                               .set_output_value(initVal));
 
         return std::make_unique<gpiod::line_request>(
-            getChip().prepare_request().set_consumer(consumer).set_line_config(cfg).do_request()
+            GpioManager::getInstance().getChip().prepare_request().set_consumer(consumer).set_line_config(cfg).do_request()
+        );
+    }
+
+    std::unique_ptr<gpiod::line_request> GpioManager::requestInputPin(unsigned int pin, const std::string &consumer) {
+        gpiod::line_config cfg;
+        cfg.add_line_settings(pin, gpiod::line_settings()
+                              .set_direction(gpiod::line::direction::INPUT));
+
+        return std::make_unique<gpiod::line_request>(
+            GpioManager::getInstance().getChip().prepare_request().set_consumer(consumer).set_line_config(cfg).do_request()
         );
     }
 }

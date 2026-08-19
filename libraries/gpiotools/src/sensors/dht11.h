@@ -43,18 +43,14 @@ namespace pitools {
         private:
             const uint8_t mDataPin;
 
-            std::unique_ptr<gpiod::line_request> mLine;
+            std::unique_ptr<gpiod::line_request> mLine{};
 
             DHT11_ERRORS mError {DHT11_ERRORS::NO_ERROR};
 
-            /*
-             * Signal the sensor that we want to read the data.
-             */
+
             void SendStartSignal();
 
-            /*
-             * Wait for the GPIO pin to get low. Returns the microseconds waited until the pin got low.
-             */
+
             int WaitForLow();
 
             /*

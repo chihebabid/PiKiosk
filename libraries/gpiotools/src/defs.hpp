@@ -31,7 +31,9 @@ namespace pitools {
 
         std::string getChipLabel() const;
 
-        std::unique_ptr<gpiod::line_request> requestOutputPin(unsigned int pin, gpiod::line::value initVal, const std::string &consumer);
+        static std::unique_ptr<gpiod::line_request> requestOutputPin(unsigned int pin, gpiod::line::value initVal, const std::string
+            &consumer);
+        static std::unique_ptr<gpiod::line_request> requestInputPin(unsigned int pin, const std::string &consumer);
 
     private:
         GpioManager();

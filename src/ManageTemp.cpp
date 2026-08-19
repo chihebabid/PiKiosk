@@ -55,10 +55,12 @@ auto ManageTemp::display(SDL_Renderer *renderer) -> void {
             std::cerr << "Erreur humidity.jpg: " << IMG_GetError() << '\n';
         }
     }
-    constexpr float temperature{33.5f},humidity{80.20f};
 
-    const std::string temperatureText{std::format("{:.2f} °C", temperature)};
-    const std::string humidityText{std::format("{:.2f} %", humidity)};
+
+    const auto [temperature, humidity] = dht11_.getData();
+
+    const std::string temperatureText{std::format("{:.2f} °C", static_cast<float>(temperature))};
+    const std::string humidityText{std::format("{:.2f} %", static_cast<float>(humidity))};
 
     renderSensorValue(renderer, font_, temperature_icon_, temperatureText, 100, 300);
     renderSensorValue(renderer, font_, humidity_icon_, humidityText, 100, 440);

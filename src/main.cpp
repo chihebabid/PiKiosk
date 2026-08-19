@@ -1,6 +1,7 @@
 #include "ManagePhotos.h"
 #include "ManageDisplay.h"
 #include "ManageTemp.h"
+#include "sensors/dht11.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 
@@ -117,6 +118,7 @@ auto main() -> int {
     sdlManager.create();
     SDL_SetRenderDrawBlendMode(sdlManager.getRenderer(), SDL_BLENDMODE_BLEND);
 
+    pitools::sensors::DHT11 dht11(4);
     // ------------------------------------------------------------
     // Boucle principale
     // ------------------------------------------------------------
@@ -147,6 +149,8 @@ auto main() -> int {
         SDL_RenderPresent(renderer);
         running=myDelay(2000);
         managePhotos->next();
+
+        
     }
 
 

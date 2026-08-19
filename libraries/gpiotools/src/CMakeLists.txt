@@ -3,8 +3,16 @@ find_path(GPIOD_INCLUDE_DIR
         NAMES gpiod.h
 )
 
+find_path(GPIOD_CXX_INCLUDE_DIR
+        NAMES gpiod.hpp
+)
+
 find_library(GPIOD_LIBRARY
         NAMES gpiod
+)
+
+find_library(GPIOD_CXX_LIBRARY
+        NAMES gpiodcxx
 )
 
 add_library(pitools
@@ -39,6 +47,7 @@ add_library(pitools
 #        actuators/StepperMotor.hpp
 #        timers/WaitDuration.hpp
 )
-
-target_include_directories(pitools PRIVATE ${GPIOD_INCLUDE_DIR})
-target_link_libraries(pitools PRIVATE ${GPIOD_LIBRARY})
+message(STATUS "GPIOD_INCLUDE_DIR: ${GPIOD_INCLUDE_DIR}")
+message(STATUS "GPIOD_LIBRARY: ${GPIOD_LIBRARY}")
+target_include_directories(pitools PRIVATE ${GPIOD_INCLUDE_DIR} ${GPIOD_CXX_INCLUDE_DIR})
+target_link_libraries(pitools PRIVATE ${GPIOD_LIBRARY} ${GPIOD_CXX_LIBRARY})

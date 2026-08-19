@@ -5,6 +5,7 @@
 #ifndef SDL_TEST_MANAGETEMP_H
 #define SDL_TEST_MANAGETEMP_H
 #include "ManageDisplay.h"
+#include "sensors/dht11.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 
@@ -26,6 +27,8 @@ private:
     SDL_Texture *temperature_icon_{};
     SDL_Texture *humidity_icon_{};
     SDL_Texture *clock_icon_{};
+
+    pitools::sensors::DHT11 dht11_{4};
 };
 
 
