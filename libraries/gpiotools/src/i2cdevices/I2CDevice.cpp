@@ -1,7 +1,7 @@
 //
 // Created by chiheb on 24/04/24.
 //
-#include "../gpio/gpiod_compat.hpp"
+
 #include "I2CDevice.hpp"
 namespace pitools {
     namespace i2cdevices {

@@ -4,7 +4,7 @@
 
 #ifndef SMARTHOME_HC04_HPP
 #define SMARTHOME_HC04_HPP
-#include "pigpio.h"
+#include "gpiod.hpp"
 #include "pitools.hpp"
 #include "sensor.hpp"
 

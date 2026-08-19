@@ -4,10 +4,11 @@
 
 #ifndef SMARTHOME_GPIODEVICE_HPP
 #define SMARTHOME_GPIODEVICE_HPP
+#include "timers/WaitDuration.hpp"
 #include <cstdint>
 #include <chrono>
 #include <thread>
-#include "timers/WaitDuration.hpp"
+#include <gpiod.hpp>
 
 namespace pitools {
     namespace gpio {
@@ -36,6 +37,7 @@ namespace pitools {
            GPIODevice(const GPIODevice&);
        protected:
            uint8_t mPin;
+           std::unique_ptr<gpiod::line_request> mRequest;
        public:
            GPIODevice(const uint8_t &) ;
            uint8_t getPin() const;

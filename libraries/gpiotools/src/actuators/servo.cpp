@@ -2,7 +2,6 @@
 // Created by chiheb on 20/04/24.
 //
 #include <iostream>
-#include "../gpio/gpiod_compat.hpp"
 #include "servo.hpp"
 #include "defs.hpp"
 namespace pitools {

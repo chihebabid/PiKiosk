@@ -7,10 +7,8 @@
 
 #ifndef CDHT11_H_
 #define CDHT11_H_
-
-#include <cstdint>
-#include <tuple>
 #include "sensor.hpp"
+#include <gpiod.hpp>
 
 namespace pitools {
     namespace sensors {
@@ -44,6 +42,9 @@ namespace pitools {
 
         private:
             const uint8_t mDataPin;
+
+            std::unique_ptr<gpiod::line_request> mLine;
+
             DHT11_ERRORS mError {DHT11_ERRORS::NO_ERROR};
 
             /*

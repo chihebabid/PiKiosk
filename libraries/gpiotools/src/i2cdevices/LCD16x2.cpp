@@ -2,7 +2,7 @@
 // Created by chiheb on 23/04/24.
 //
 #include <thread>
-#include "../gpio/gpiod_compat.hpp"
+#include <gpiod.hpp>
 
 #include "LCD16x2.hpp"
 

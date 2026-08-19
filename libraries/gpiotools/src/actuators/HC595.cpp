@@ -6,13 +6,14 @@
  */
 
 #include "HC595.h"
-#include "pigpio.h"
+
 #include <cstdint>
 #include <chrono>
 #include <thread>
 #include <ostream>
-#include <cstring>
 #include "defs.hpp"
+#include <cstring>
+#include <gpiod.hpp>
 using namespace std::chrono_literals;
 namespace pitools {
     namespace actuators {

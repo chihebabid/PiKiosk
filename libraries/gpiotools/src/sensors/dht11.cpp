@@ -6,13 +6,12 @@
  */
 
 #include "dht11.h"
-#include "../gpio/gpiod_compat.hpp"
+#include "defs.hpp"
 #include <thread>
 #include <chrono>
 #include <cstdint>
 #include <stdexcept>
-#include "defs.hpp"
-
+#include <gpiod.hpp>
 
 
 namespace pitools {
@@ -20,13 +19,22 @@ namespace pitools {
         constexpr auto FREQUENCY=10000000;
         DHT11::DHT11(const uint8_t gpioPin) :
                 mDataPin(gpioPin) {
-            pitools::use_pins({mDataPin});
             init();
         }
 
         void DHT11::init() {
-            gpioSetMode(mDataPin, PI_OUTPUT);
-            gpioWrite(mDataPin, 1);
+            gpiod::chip& chip = pitools::GpioManager::getInstance().getChip();
+
+            gpiod::line_settings settings;
+            settings.set_direction(gpiod::line::direction::OUTPUT);
+            settings.set_output_value(gpiod::line::value::ACTIVE);
+            gpiod::line_config line_cfg;
+            line_cfg.add_line_settings(mDataPin, settings);
+            auto request = chip.prepare_request().set_consumer("DHTData")
+                      .set_line_config(line_cfg).do_request();
+            mLine=std::make_unique<gpiod::line_request>(std::move(request));
+            // gpioSetMode(mDataPin, PI_OUTPUT);
+            // gpioWrite(mDataPin, 1);
         }
 
         dht11_data_t DHT11::ProcessData(uint64_t Data) {
@@ -78,7 +86,7 @@ namespace pitools {
 
         int DHT11::WaitForLow() {
             auto StartTime = gpioTick();
-            while (gpioRead(mDataPin)) {
+            while (mLine->get_value(mDataPin)== gpiod::line::value::ACTIVE) {
                 if (FREQUENCY < gpioTick() - StartTime) {
                     throw std::runtime_error(
                             "Timeout while waiting for pin to get low.");
@@ -99,9 +107,9 @@ namespace pitools {
         }
 
         void DHT11::SendStartSignal() {
-            gpioWrite(mDataPin, 0);
+            mLine->set_value(mDataPin, gpiod::line::value::INACTIVE);
             std::this_thread::sleep_for(std::chrono::milliseconds(20));
-            gpioWrite(mDataPin, 1);
+            mLine->set_value(mDataPin, gpiod::line::value::ACTIVE);
         }
 
 

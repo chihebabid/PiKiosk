@@ -22,4 +22,4 @@ target_link_options(kiosk PRIVATE
         -static-libstdc++
 )
 
-target_link_libraries(kiosk PRIVATE atomic)
+target_link_libraries(kiosk PRIVATE atomic pitools)
