@@ -27,8 +27,8 @@ private:
     SDL_Texture *temperature_icon_{};
     SDL_Texture *humidity_icon_{};
     SDL_Texture *clock_icon_{};
+    std::unique_ptr<pitools::sensors::DHT11> dht11_{};
 
-    pitools::sensors::DHT11 dht11_{4};
 };
 
 

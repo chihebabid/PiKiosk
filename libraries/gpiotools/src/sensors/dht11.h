@@ -30,26 +30,16 @@ namespace pitools {
              */
             explicit DHT11(const uint8_t gpioPin);
 
-            void init() override;
-
-            /*
-             * This method starts a measurement and returns the data from the last measurement.
-             * This behaviour is due to how the DHT11 sensor works. Make two consecutive readings
-             * to get the most current data. But wait at least 5 seconds between measurements,
-             * otherwise the data will be wrong.
-             */
             dht11_data_t getData() override;
+
+            void init() override;
 
         private:
             const uint8_t mDataPin;
             DHT11_ERRORS mError {DHT11_ERRORS::NO_ERROR};
-            std::unique_ptr<gpiod::line_request> mLine{};
-
-
-
+            std::unique_ptr<gpiod::line_request> m_line_request_{};
 
             void SendStartSignal();
-
 
             int WaitForLow();
 

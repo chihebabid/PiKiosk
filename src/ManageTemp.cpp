@@ -57,7 +57,7 @@ auto ManageTemp::display(SDL_Renderer *renderer) -> void {
     }
 
 
-    const auto [temperature, humidity] = dht11_.getData();
+    const auto [temperature, humidity] = dht11_->getData();
 
     const std::string temperatureText{std::format("{:.2f} °C", static_cast<float>(temperature))};
     const std::string humidityText{std::format("{:.2f} %", static_cast<float>(humidity))};
@@ -73,6 +73,9 @@ auto ManageTemp::init() -> void {
         std::cerr << "TTF_OpenFont failed: " << TTF_GetError() << '\n';
         exit(1);
     }
+    dht11_ = std::make_unique<pitools::sensors::DHT11>(4);
+    dht11_->init();
+
 }
 
 ManageTemp::~ManageTemp() {

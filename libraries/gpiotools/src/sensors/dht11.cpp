@@ -19,7 +19,7 @@ namespace pitools {
         constexpr auto FREQUENCY=10000000;
         DHT11::DHT11(const uint8_t gpioPin) :
                 mDataPin(gpioPin) {
-            init();
+
         }
 
         void DHT11::init() {
@@ -29,19 +29,17 @@ namespace pitools {
                     .set_bias(gpiod::line::bias::PULL_UP)
                     .set_output_value(gpiod::line::value::ACTIVE); // High state (floating with pull-up)
 
-            // 2. Map settings to pin
+
             gpiod::line_config line_cfg;
             line_cfg.add_line_settings(mDataPin, settings);
 
-            // 3. Request line
-            mLine = std::make_unique<gpiod::line_request>(
+
+            m_line_request_ = std::make_unique<gpiod::line_request>(
                 pitools::GpioManager::getInstance().getChip().prepare_request()
                     .set_consumer("DHT_Sensor")
                     .set_line_config(line_cfg)
                     .do_request()
             );
-            // gpioSetMode(mDataPin, PI_OUTPUT);
-            // gpioWrite(mDataPin, 1);
         }
 
         dht11_data_t DHT11::ProcessData(uint64_t Data) {
@@ -66,7 +64,7 @@ namespace pitools {
             uint64_t data{0};
             mError=DHT11_ERRORS::NO_ERROR;
             SendStartSignal();
-            mLine->set_value(mDataPin, gpiod::line::value::ACTIVE); //gpioSetMode(mDataPin, PI_INPUT);
+            m_line_request_->set_value(mDataPin, gpiod::line::value::ACTIVE); //gpioSetMode(mDataPin, PI_INPUT);
             try {
                 WaitForLow();
                 WaitForHigh();
@@ -81,11 +79,11 @@ namespace pitools {
                 }
                 WaitForHigh();
             } catch (...) {
-                mLine->set_value(mDataPin, gpiod::line::value::ACTIVE);
+                m_line_request_->set_value(mDataPin, gpiod::line::value::ACTIVE);
                 mError=DHT11_ERRORS::TIMEOUT;
                 return {0,0};
             }
-            mLine->set_value(mDataPin, gpiod::line::value::ACTIVE);
+            m_line_request_->set_value(mDataPin, gpiod::line::value::ACTIVE);
             return ProcessData(data);
         }
 
@@ -98,7 +96,7 @@ namespace pitools {
 
         int DHT11::WaitForLow() {
             auto StartTime = getMicros();
-            while (mLine->get_value(mDataPin)== gpiod::line::value::ACTIVE) {
+            while (m_line_request_->get_value(mDataPin)== gpiod::line::value::ACTIVE) {
                 if (FREQUENCY < getMicros() - StartTime) {
                     throw std::runtime_error(
                             "Timeout while waiting for pin to get low.");
@@ -113,7 +111,7 @@ namespace pitools {
         int DHT11::WaitForHigh() {
             auto startTime = getMicros();
 
-            while (mLine->get_value(mDataPin) == gpiod::line::value::INACTIVE) {
+            while (m_line_request_->get_value(mDataPin) == gpiod::line::value::INACTIVE) {
                 if (FREQUENCY < getMicros() - startTime) {
                     throw std::runtime_error("Timeout while waiting for pin to get high.");
                 }
@@ -123,9 +121,9 @@ namespace pitools {
         }
 
         void DHT11::SendStartSignal() {
-            mLine->set_value(mDataPin, gpiod::line::value::INACTIVE);
+            m_line_request_->set_value(mDataPin, gpiod::line::value::INACTIVE);
             std::this_thread::sleep_for(std::chrono::milliseconds(20));
-            mLine->set_value(mDataPin, gpiod::line::value::ACTIVE);
+            m_line_request_->set_value(mDataPin, gpiod::line::value::ACTIVE);
         }
 
 
