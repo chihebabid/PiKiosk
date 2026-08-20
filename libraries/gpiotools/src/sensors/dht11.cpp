@@ -103,7 +103,7 @@ namespace pitools {
 
         // Then your function stays almost identical:
         int DHT11::WaitForHigh() {
-            auto startTime = getMicros();
+            auto startTime {getMicros()};
 
             while (m_line_request_->get_value(mDataPin) == gpiod::line::value::INACTIVE) {
                 if (FREQUENCY < getMicros() - startTime) {
