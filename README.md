@@ -1,13 +1,13 @@
 # PiKiosk
 
 A lightweight kiosk application developed in C++/SDL for Raspberry Pi. Displays photos, sensor readings (DHT11), current time and other realtime information in fullscreen.
-It is not designed for production use, but rather as a personal project to learn C++ and SDL2.
+It is not designed for production use, but rather as a personal project to learn C++ and SDL3.
 
 ## Features
 - Fullscreen image slideshow (./images directory by default)
 - Temperature and humidity display (DHT11)
 - Time display
-- Uses SDL2, SDL2_image and SDL2_ttf for rendering
+- Uses SDL3, SDL3_image and SDL3_ttf for rendering
 - GPIO access via libgpiod (included helper library in libraries/gpiotools)
 
 ## Requirements
