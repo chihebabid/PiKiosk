@@ -41,7 +41,7 @@ auto ManagePhotos::display(SDL_Renderer *renderer) -> void {
     SDL_Surface *surface{IMG_Load(l_images_[current_image_index_].c_str())};
 
     if (!surface) {
-        std::cerr << "IMG_Load failed: " << IMG_GetError() << '\n';
+        std::cerr << "IMG_Load failed: " << SDL_GetError() << '\n';
         current_image_index_ = (current_image_index_ + 1) % l_images_.size();
         return;
     }
@@ -62,7 +62,7 @@ auto ManagePhotos::display(SDL_Renderer *renderer) -> void {
 
 
     texture = SDL_CreateTextureFromSurface(renderer, resizedSurface);
-    SDL_FreeSurface(resizedSurface);
+    SDL_DestroySurface(resizedSurface);
     if (!texture) {
         std::cerr << "SDL_CreateTextureFromSurface failed: " << SDL_GetError() << '\n';
         current_image_index_ = (current_image_index_ + 1) % l_images_.size();
@@ -107,18 +107,18 @@ SDL_Surface *ManagePhotos::resizeSurface(SDL_Surface *source, int maxWidth, int 
     const double scale{std::min(scaleX, scaleY)};
 
     if (scale >= 1.0)
-        return SDL_ConvertSurface(source, source->format, 0);
+        return SDL_DuplicateSurface(source);
 
     const int newWidth{static_cast<int>(source->w * scale)};
     const int newHeight{static_cast<int>(source->h * scale)};
 
-    SDL_Surface *resized = SDL_CreateRGBSurfaceWithFormat(0, newWidth, newHeight, 32, SDL_PIXELFORMAT_RGBA32);
+    SDL_Surface *resized = SDL_CreateSurface(newWidth, newHeight, SDL_PIXELFORMAT_RGBA32);
     if (!resized)
         return nullptr;
 
     SDL_Rect destination{0, 0, newWidth, newHeight};
-    if (SDL_BlitScaled(source, nullptr, resized, &destination) != 0) {
-        SDL_FreeSurface(resized);
+    if (!SDL_BlitSurfaceScaled(source, nullptr, resized, &destination, SDL_SCALEMODE_LINEAR)) {
+        SDL_DestroySurface(resized);
         return nullptr;
     }
     return resized;

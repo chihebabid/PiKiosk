@@ -19,14 +19,6 @@ auto init() -> void {
         std::cerr << "SDL_Init failed: " << SDL_GetError() << '\n';
         exit(1);
     }
-
-    const int imgFlags = IMG_INIT_JPG | IMG_INIT_PNG;
-
-    if ((IMG_Init(imgFlags) & imgFlags) != imgFlags) {
-        std::cerr << "IMG_Init failed: " << SDL_GetError() << '\n';
-        SDL_Quit();
-        exit(1);
-    }
 }
 
 
@@ -43,11 +35,12 @@ public:
     }
 
     static auto create() -> void {
-        window_ = SDL_CreateWindow("SDL Image Viewer", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, SDL_WINDOW_SHOWN);
+        window_ = SDL_CreateWindow("SDL Image Viewer", 800, 600, 0);
         if (!window_) {
             std::cerr << "SDL_CreateWindow failed: " << SDL_GetError() << '\n';
             exit(1);
         }
+
         renderer_ = SDL_CreateRenderer(window_, nullptr);
         if (!renderer_) {
             std::cerr << "SDL_CreateRenderer failed: " << SDL_GetError() << '\n';
@@ -66,20 +59,13 @@ private:
             exit(1);
         }
 
-        const int imgFlags = IMG_INIT_JPG | IMG_INIT_PNG;
 
-        if ((IMG_Init(imgFlags) & imgFlags) != imgFlags) {
-            std::cerr << "IMG_Init failed: " << SDL_GetError() << '\n';
-            SDL_Quit();
-            exit(1);
-        }
     }
 
     // 4. Destructeur privé : empêche la destruction manuelle (ex: delete &s;)
     ~ManageSDL() {
         if (renderer_) SDL_DestroyRenderer(renderer_);
         if (window_) SDL_DestroyWindow(window_);
-        IMG_Quit();
         SDL_Quit();
     }
 
@@ -128,9 +114,9 @@ auto main() -> int {
     while (running) {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_QUIT)
+            if (event.type == SDL_EVENT_QUIT)
                 running = false;
-            if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)
+            if (event.type == SDL_EVENT_KEY_DOWN && event.key.key == SDLK_ESCAPE)
                 running = false;
         }
         managePhotos->display(renderer);
@@ -149,10 +135,6 @@ auto main() -> int {
         SDL_RenderPresent(renderer);
         running=myDelay(2000);
         managePhotos->next();
-
-        
     }
-
-
     return 0;
 }

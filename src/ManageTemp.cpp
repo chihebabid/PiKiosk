@@ -3,6 +3,7 @@
 //
 
 #include "ManageTemp.h"
+#include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
 #include <SDL3_ttf/SDL_ttf.h>
 #include <string>
@@ -11,51 +12,50 @@
 #include <format>
 
 auto ManageTemp::displayTime(SDL_Renderer *renderer) -> void {
-
-    static int _r{80}, _g{100}, _b{40};
+    static uint8_t _r{80}, _g{100}, _b{40};
     SDL_SetRenderDrawColor(renderer, _r, _g, _b, 150);
     _r = (_r + 2) % 255;
     _g = (_g + 5) % 255;
     _b = (_b + 4) % 255;
-    SDL_Rect fullScreenRect{380, 80, 400, 140};
+
+    SDL_FRect fullScreenRect{380.0f, 80.0f, 400.0f, 140.0f};
     SDL_RenderFillRect(renderer, &fullScreenRect);
 
     if (!clock_icon_) {
         clock_icon_ = IMG_LoadTexture(renderer, "./icons/time.jpg");
         if (!clock_icon_) {
-            std::cerr << "Erreur time.jpg: " << IMG_GetError() << '\n';
+            std::cerr << "Erreur time.jpg: " << SDL_GetError() << '\n';
         }
     }
 
-    const SDL_Color textColor{255, 255, 255, 255};
     const auto now = std::chrono::system_clock::now();
-
     const std::string currentTime = std::format("{:%H:%M}", now);
 
     renderSensorValue(renderer, font_, clock_icon_, currentTime, 400, 100);
 }
+
 auto ManageTemp::display(SDL_Renderer *renderer) -> void {
-    static int _r{20}, _g{30}, _b{180};
+    static uint8_t _r{20}, _g{30}, _b{180};
     SDL_SetRenderDrawColor(renderer, _r, _g, _b, 150);
     _r = (_r + 3) % 255;
     _g = (_g + 2) % 255;
     _b = (_b + 1) % 255;
-    SDL_Rect fullScreenRect{80, 280, 400, 280};
+
+    SDL_FRect fullScreenRect{80.0f, 280.0f, 400.0f, 280.0f};
     SDL_RenderFillRect(renderer, &fullScreenRect);
 
     if (!temperature_icon_) {
         temperature_icon_ = IMG_LoadTexture(renderer, "./icons/temp.jpg");
         if (!temperature_icon_) {
-            std::cerr << "Erreur temp.jpg: " << IMG_GetError() << '\n';
+            std::cerr << "Erreur temp.jpg: " << SDL_GetError() << '\n';
         }
     }
     if (!humidity_icon_) {
         humidity_icon_ = IMG_LoadTexture(renderer, "./icons/humidity.jpg");
         if (!humidity_icon_) {
-            std::cerr << "Erreur humidity.jpg: " << IMG_GetError() << '\n';
+            std::cerr << "Erreur humidity.jpg: " << SDL_GetError() << '\n';
         }
     }
-
 
     const auto [temperature, humidity] = dht11_->getData();
 
@@ -67,15 +67,19 @@ auto ManageTemp::display(SDL_Renderer *renderer) -> void {
 }
 
 auto ManageTemp::init() -> void {
-    TTF_Init();
-    font_ = TTF_OpenFont("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 40);
-    if (!font_) {
-        std::cerr << "TTF_OpenFont failed: " << TTF_GetError() << '\n';
+    if (!TTF_Init()) {
+        std::cerr << "TTF_Init failed: " << SDL_GetError() << '\n';
         exit(1);
     }
+
+    font_ = TTF_OpenFont("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 40.0f);
+    if (!font_) {
+        std::cerr << "TTF_OpenFont failed: " << SDL_GetError() << '\n';
+        exit(1);
+    }
+
     dht11_ = std::make_unique<pitools::sensors::DHT11>(4);
     dht11_->init();
-
 }
 
 ManageTemp::~ManageTemp() {
@@ -88,47 +92,50 @@ ManageTemp::~ManageTemp() {
     if (font_) {
         TTF_CloseFont(font_);
     }
+    TTF_Quit();
 }
 
 void ManageTemp::renderSensorValue(SDL_Renderer *renderer, TTF_Font *font, SDL_Texture *icon, const std::string &value, int x, int y) {
     if (!renderer || !font || !icon) {
         std::cerr << "Renderer, font, or icon is null. Cannot render sensor value." << std::endl;
-        std::cerr << "Renderer: " << renderer << ", Font: " << font << ", Icon: " << icon << std::endl;
         return;
     }
 
-    int iconWidth,iconHeight;
-    SDL_QueryTexture(icon, nullptr, nullptr, &iconWidth, &iconHeight);
+    float iconWidth = 0.0f, iconHeight = 0.0f;
+    SDL_GetTextureSize(icon, &iconWidth, &iconHeight);
 
     // Taille d'affichage de l'icône
-    constexpr int displayIconWidth{160}, displayIconHeight{100};
-    SDL_Rect iconRect{x, y, displayIconWidth, displayIconHeight};
-    SDL_RenderCopy(renderer, icon, nullptr, &iconRect);
+    constexpr float displayIconWidth{160.0f}, displayIconHeight{100.0f};
+    SDL_FRect iconRect{static_cast<float>(x), static_cast<float>(y), displayIconWidth, displayIconHeight};
+    SDL_RenderTexture(renderer, icon, nullptr, &iconRect);
 
     const SDL_Color textColor{255, 255, 255, 255};
-    SDL_Surface *textSurface = TTF_RenderUTF8_Blended(font, value.c_str(), textColor);
+    SDL_Surface *textSurface = TTF_RenderText_Blended(font, value.c_str(), value.length(), textColor);
     if (!textSurface) {
-        std::cerr << "TTF_RenderUTF8_Blended failed: " << TTF_GetError() << '\n';
+        std::cerr << "TTF_RenderText_Blended failed: " << SDL_GetError() << '\n';
         return;
     }
 
     SDL_Texture *textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
     if (!textTexture) {
         std::cerr << "SDL_CreateTextureFromSurface failed: " << SDL_GetError() << '\n';
-        SDL_FreeSurface(textSurface);
+        SDL_DestroySurface(textSurface);
         return;
     }
 
-    const int textWidth = textSurface->w;
-    const int textHeight = textSurface->h;
-    const int spacing = 20;
-    SDL_Rect textRect;
-    textRect.x = x + displayIconWidth + spacing;
-    textRect.y = y + (displayIconHeight - textHeight) / 2;
-    textRect.w = textWidth;
-    textRect.h = textHeight;
-    SDL_RenderCopy(renderer, textTexture, nullptr, &textRect);
+    const float textWidth = static_cast<float>(textSurface->w);
+    const float textHeight = static_cast<float>(textSurface->h);
+    const float spacing = 20.0f;
 
-    SDL_FreeSurface(textSurface);
+    SDL_FRect textRect{
+        x + displayIconWidth + spacing,
+        y + (displayIconHeight - textHeight) / 2.0f,
+        textWidth,
+        textHeight
+    };
+
+    SDL_RenderTexture(renderer, textTexture, nullptr, &textRect);
+
+    SDL_DestroySurface(textSurface);
     SDL_DestroyTexture(textTexture);
 }
