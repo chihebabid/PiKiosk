@@ -5,7 +5,7 @@
 #ifndef SDL_TEST_MANAGEPHOTOS_H
 #define SDL_TEST_MANAGEPHOTOS_H
 #include "ManageDisplay.h"
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
 #include <string>
 #include <vector>
 #include <filesystem>

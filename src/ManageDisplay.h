@@ -5,7 +5,7 @@
 #ifndef SDL_TEST_MANAGEDISPLAY_H
 #define SDL_TEST_MANAGEDISPLAY_H
 #include <memory>
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
 class ManageDisplay {
 public:
     virtual auto display(SDL_Renderer *renderer) -> void = 0;

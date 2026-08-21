@@ -3,8 +3,8 @@
 //
 
 #include "ManageTemp.h"
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_ttf.h>
+#include <SDL3_image/SDL_image.h>
+#include <SDL3_ttf/SDL_ttf.h>
 #include <string>
 #include <iostream>
 #include <chrono>

@@ -2,8 +2,8 @@
 #include "ManageDisplay.h"
 #include "ManageTemp.h"
 #include "sensors/dht11.h"
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
+#include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
 
 #include <chrono>
 #include <filesystem>
@@ -15,7 +15,7 @@ namespace fs = std::filesystem;
 
 
 auto init() -> void {
-    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
         std::cerr << "SDL_Init failed: " << SDL_GetError() << '\n';
         exit(1);
     }
@@ -23,7 +23,7 @@ auto init() -> void {
     const int imgFlags = IMG_INIT_JPG | IMG_INIT_PNG;
 
     if ((IMG_Init(imgFlags) & imgFlags) != imgFlags) {
-        std::cerr << "IMG_Init failed: " << IMG_GetError() << '\n';
+        std::cerr << "IMG_Init failed: " << SDL_GetError() << '\n';
         SDL_Quit();
         exit(1);
     }
@@ -48,7 +48,7 @@ public:
             std::cerr << "SDL_CreateWindow failed: " << SDL_GetError() << '\n';
             exit(1);
         }
-        renderer_ = SDL_CreateRenderer(window_, -1, SDL_RENDERER_ACCELERATED);
+        renderer_ = SDL_CreateRenderer(window_, nullptr);
         if (!renderer_) {
             std::cerr << "SDL_CreateRenderer failed: " << SDL_GetError() << '\n';
             exit(1);
@@ -61,7 +61,7 @@ public:
 
 private:
     ManageSDL() {
-        if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+        if (!SDL_Init(SDL_INIT_VIDEO)) {
             std::cerr << "SDL_Init failed: " << SDL_GetError() << '\n';
             exit(1);
         }
@@ -69,7 +69,7 @@ private:
         const int imgFlags = IMG_INIT_JPG | IMG_INIT_PNG;
 
         if ((IMG_Init(imgFlags) & imgFlags) != imgFlags) {
-            std::cerr << "IMG_Init failed: " << IMG_GetError() << '\n';
+            std::cerr << "IMG_Init failed: " << SDL_GetError() << '\n';
             SDL_Quit();
             exit(1);
         }
@@ -96,9 +96,9 @@ auto myDelay(int milliseconds) -> bool {
     while (running) {
         SDL_Event e;
         while (SDL_PollEvent(&e)) {
-            if (e.type == SDL_QUIT)
+            if (e.type == SDL_EVENT_QUIT)
                 running = false;
-            if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
+            if (e.type == SDL_EVENT_KEY_DOWN && e.key.key == SDLK_ESCAPE)
                 running = false;
         }
 

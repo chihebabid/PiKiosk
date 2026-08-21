@@ -3,7 +3,7 @@
 //
 
 #include "ManagePhotos.h"
-#include <SDL2/SDL_image.h>
+#include <SDL3_image/SDL_image.h>
 #include <iostream>
 
 ManagePhotos::ManagePhotos(const std::string &path_to_images) : path_to_images_(path_to_images) {
@@ -46,13 +46,14 @@ auto ManagePhotos::display(SDL_Renderer *renderer) -> void {
         return;
     }
 
-    SDL_RendererInfo rendererInfo{};
-    SDL_GetRendererInfo(renderer, &rendererInfo);
-    int maxTextureWidth{rendererInfo.max_texture_width};
-    int maxTextureHeight{rendererInfo.max_texture_height};
+    // Retrieve maximum texture dimensions using SDL3 properties
+    SDL_PropertiesID props = SDL_GetRendererProperties(renderer);
+    int maxTextureWidth = static_cast<int>(SDL_GetNumberProperty(props, SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 8192));
+    int maxTextureHeight = maxTextureWidth;
 
     SDL_Surface *resizedSurface = resizeSurface(surface, maxTextureWidth, maxTextureHeight);
-    SDL_FreeSurface(surface);
+    SDL_DestroySurface(surface);
+
     if (!resizedSurface) {
         std::cerr << "Impossible de redimensionner l'image\n";
         current_image_index_ = (current_image_index_ + 1) % l_images_.size();
@@ -72,9 +73,8 @@ auto ManagePhotos::display(SDL_Renderer *renderer) -> void {
     // Récupérer dimensions image
     // --------------------------------------------------------
 
-    int imageWidth, imageHeight;
-
-    SDL_QueryTexture(texture, nullptr, nullptr, &imageWidth, &imageHeight);
+    float imageWidth{}, imageHeight{};
+    SDL_GetTextureSize(texture, &imageWidth, &imageHeight);
 
     // --------------------------------------------------------
     // Adapter l'image à la fenêtre en conservant le ratio
@@ -82,16 +82,21 @@ auto ManagePhotos::display(SDL_Renderer *renderer) -> void {
 
     int windowWidth, windowHeight;
 
-    SDL_GetRendererOutputSize(renderer, &windowWidth, &windowHeight);
+    SDL_GetRenderOutputSize(renderer, &windowWidth, &windowHeight);
     const double scaleX = static_cast<double>(windowWidth) / imageWidth;
     const double scaleY = static_cast<double>(windowHeight) / imageHeight;
     const double scale = std::min(scaleX, scaleY);
     const int dstWidth = static_cast<int>(imageWidth * scale);
     const int dstHeight = static_cast<int>(imageHeight * scale);
-    SDL_Rect destination{(windowWidth - dstWidth) / 2, (windowHeight - dstHeight) / 2, dstWidth, dstHeight};
+    SDL_FRect destination(
+        static_cast<float>((windowWidth - dstWidth) / 2.0f),
+        static_cast<float>((windowHeight - dstHeight) / 2.0f),
+        dstWidth,
+        dstHeight
+    );
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
-    SDL_RenderCopy(renderer, texture, nullptr, &destination);
+    SDL_RenderTexture(renderer, texture, nullptr, &destination);
     SDL_DestroyTexture(texture);
 }
 
