@@ -22,7 +22,7 @@ namespace pitools {
             int temperature;
             int humidity;
         };
-        class DHT11 : public Sensor<dht11_data_t> {
+        class DHT11 : public Sensor<std::optional<dht11_data_t>> {
         public:
             /*
              * Constructor
@@ -30,7 +30,7 @@ namespace pitools {
              */
             explicit DHT11(const uint8_t gpioPin);
 
-            dht11_data_t getData() override;
+            std::optional<dht11_data_t> getData() override;
 
             void init() override;
 
@@ -48,10 +48,7 @@ namespace pitools {
              */
             int WaitForHigh();
 
-            /*
-             * Extracts the relevant data from the binary raw data.
-             */
-            dht11_data_t ProcessData(uint64_t Data);
+            std::optional<dht11_data_t> ProcessData(uint64_t Data);
 
 
             uint8_t CalculateParity(uint8_t HumidityHigh, uint8_t HumidityLow,

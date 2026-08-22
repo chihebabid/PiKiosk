@@ -39,7 +39,10 @@ namespace pitools {
             );
         }
 
-        dht11_data_t DHT11::ProcessData(uint64_t Data) {
+        /*
+        * Extracts the relevant data from the binary raw data.
+        */
+        std::optional<dht11_data_t> DHT11::ProcessData(uint64_t Data) {
             uint8_t HumidityHigh = (Data >> 32) & 0xFF;
             uint8_t HumidityLow = (Data >> 24) & 0xFF;
             uint8_t TemperatureHigh = (Data >> 16) & 0xFF;
@@ -50,12 +53,12 @@ namespace pitools {
                 != CalculateParity(HumidityHigh, HumidityLow, TemperatureHigh,
                                    TemperatureLow)) {
                 mError = DHT11_ERRORS::CHECKSUM_ERROR;
-                return {0, 0};
+                return std::nullopt;
             }
-            return {TemperatureHigh, HumidityHigh};
+            return std::make_optional(dht11_data_t{TemperatureHigh, HumidityHigh});
         }
 
-        dht11_data_t DHT11::getData() {
+        std::optional<dht11_data_t> DHT11::getData() {
             uint64_t data{0};
             mError = DHT11_ERRORS::NO_ERROR;
             SendStartSignal();
@@ -76,7 +79,7 @@ namespace pitools {
             } catch (...) {
                 m_line_request_->set_value(mDataPin, gpiod::line::value::ACTIVE);
                 mError = DHT11_ERRORS::TIMEOUT;
-                return {0, 0};
+                return std::nullopt;
             }
             m_line_request_->set_value(mDataPin, gpiod::line::value::ACTIVE);
             return ProcessData(data);

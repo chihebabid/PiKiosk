@@ -57,10 +57,16 @@ auto ManageTemp::display(SDL_Renderer *renderer) -> void {
         }
     }
 
-    const auto [temperature, humidity] = dht11_->getData();
+    const auto res = dht11_->getData();
+    if (res.has_value()) {
+        temp_ = res->temperature;
+        humidity_ = res->humidity;
+    } else {
+        std::cerr << "Erreur lecture DHT11\n";
+    }
 
-    const std::string temperatureText{std::format("{:.2f} °C", static_cast<float>(temperature))};
-    const std::string humidityText{std::format("{:.2f} %", static_cast<float>(humidity))};
+    const std::string temperatureText{std::format("{:.2f} °C", static_cast<float>(temp_))};
+    const std::string humidityText{std::format("{:.2f} %", static_cast<float>(humidity_))};
 
     renderSensorValue(renderer, font_, temperature_icon_, temperatureText, 100, 300);
     renderSensorValue(renderer, font_, humidity_icon_, humidityText, 100, 440);

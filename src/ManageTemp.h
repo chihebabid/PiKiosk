@@ -23,6 +23,8 @@ public:
 private:
     void renderSensorValue(SDL_Renderer *renderer, TTF_Font *font, SDL_Texture *icon, const std::string &value, int x, int y);
 
+    int temp_{};
+    int humidity_{};
     TTF_Font *font_{};
     SDL_Texture *temperature_icon_{};
     SDL_Texture *humidity_icon_{};
