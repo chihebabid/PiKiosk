@@ -5,7 +5,7 @@
 #include "SlideTransitionManager.h"
 #include <algorithm>
 
-void SlideTransitionManager::cross_fading(SDL_Renderer *renderer, SDL_Texture *currentTexture, SDL_Texture *nextTexture, float progress) {
+void SlideTransitionManager::crossFading(SDL_Renderer *renderer, SDL_Texture *currentTexture, SDL_Texture *nextTexture, float progress) {
     progress = std::clamp(progress, 0.0f, 1.0f);
 
     // 1. Enable Alpha Blending on both textures
@@ -44,4 +44,26 @@ void SlideTransitionManager::cross_fading(SDL_Renderer *renderer, SDL_Texture *c
     renderScaled(nextTexture);
 
     SDL_RenderPresent(renderer);
+}
+
+
+void SlideTransitionManager::runSlideshow(SDL_Renderer *renderer, SDL_Texture *texA, SDL_Texture *texB) {
+    bool running = true;
+    constexpr float transitionDurationSec = 1.5f; // 1.5 seconds fade
+    const uint64_t startTicks = SDL_GetTicks();
+
+    while (running) {
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_EVENT_QUIT) running = false;
+        }
+
+        float elapsedSeconds = (SDL_GetTicks() - startTicks) / 1000.0f;
+        float progress = elapsedSeconds / transitionDurationSec;
+        SlideTransitionManager::crossFading(renderer, texA, texB, progress);
+        if (progress >= 1.0f) {
+            break;
+        }
+        SDL_Delay(16); // ~60 FPS
+    }
 }

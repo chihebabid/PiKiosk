@@ -20,8 +20,8 @@ public:
     auto init() -> void override;
     void transition(SDL_Renderer *renderer);
 private:
-    void runSlideshow(SDL_Renderer *renderer, SDL_Texture *texA, SDL_Texture *texB);
     SDL_Surface *resizeSurface(SDL_Surface *source, int maxWidth, int maxHeight);
+    auto loadImageIntoResizedTexture(SDL_Renderer *rnd, const fs::path &path) -> SDL_Texture*;
     std::string path_to_images_;
     std::vector<fs::path> l_images_;
     size_t current_image_index_ {};
