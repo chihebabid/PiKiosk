@@ -28,6 +28,8 @@ auto ManageTemp::displayTime(SDL_Renderer *renderer) -> void {
         }
     }
 
+
+
     const auto now = std::chrono::system_clock::now();
     const std::string currentTime = std::format("{:%H:%M}", now);
 

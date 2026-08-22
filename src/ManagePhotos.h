@@ -18,8 +18,9 @@ public:
     auto display(SDL_Renderer *renderer) -> void override;
     auto next() -> void;
     auto init() -> void override;
+    void transition(SDL_Renderer *renderer);
 private:
-
+    void runSlideshow(SDL_Renderer *renderer, SDL_Texture *texA, SDL_Texture *texB);
     SDL_Surface *resizeSurface(SDL_Surface *source, int maxWidth, int maxHeight);
     std::string path_to_images_;
     std::vector<fs::path> l_images_;

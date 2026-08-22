@@ -14,7 +14,7 @@ find_library(GPIOD_LIBRARY
 )
 
 add_executable(kiosk
-    main.cpp ManagePhotos.cpp ManageTemp.cpp
+    main.cpp ManagePhotos.cpp ManageTemp.cpp SlideTransitionManager.cpp
 )
 
 target_link_libraries(kiosk

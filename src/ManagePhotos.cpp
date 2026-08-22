@@ -1,10 +1,11 @@
 //
 // Created by chiheb on 16/08/2026.
 //
-
+#include "SlideTransitionManager.h"
 #include "ManagePhotos.h"
 #include <SDL3_image/SDL_image.h>
 #include <iostream>
+#include <algorithm>
 
 ManagePhotos::ManagePhotos(const std::string &path_to_images) : path_to_images_(path_to_images) {
 }
@@ -15,9 +16,8 @@ auto ManagePhotos::init() -> void {
         if (!fs::is_regular_file(path))
             return false;
 
-        const std::string ext = path.extension().string();
-
-        return ext == ".jpg" || ext == ".JPG" || ext == ".jpeg" || ext == ".JPEG" || ext == ".png" || ext == ".PNG" || ext == ".bmp" || ext
+        const std::string ext{path.extension().string()};
+        return ext == ".jpg" or ext == ".JPG" or ext == ".jpeg" or ext == ".JPEG" or ext == ".png" or ext == ".PNG" or ext == ".bmp" or ext
                == ".BMP";
     };
 
@@ -30,6 +30,7 @@ auto ManagePhotos::init() -> void {
         std::cerr << "Aucune image trouvee dans " << path_to_images_ << '\n';
     }
 }
+
 auto ManagePhotos::next() -> void {
     current_image_index_ = (current_image_index_ + 1) % l_images_.size();
 }
@@ -46,10 +47,9 @@ auto ManagePhotos::display(SDL_Renderer *renderer) -> void {
         return;
     }
 
-    // Retrieve maximum texture dimensions using SDL3 properties
     SDL_PropertiesID props = SDL_GetRendererProperties(renderer);
     int maxTextureWidth = static_cast<int>(SDL_GetNumberProperty(props, SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 8192));
-    int maxTextureHeight = maxTextureWidth;
+    int maxTextureHeight{maxTextureWidth};
 
     SDL_Surface *resizedSurface = resizeSurface(surface, maxTextureWidth, maxTextureHeight);
     SDL_DestroySurface(surface);
@@ -122,4 +122,73 @@ SDL_Surface *ManagePhotos::resizeSurface(SDL_Surface *source, int maxWidth, int 
         return nullptr;
     }
     return resized;
+}
+
+void ManagePhotos::runSlideshow(SDL_Renderer *renderer, SDL_Texture *texA, SDL_Texture *texB) {
+    bool running = true;
+    constexpr float transitionDurationSec = 1.5f; // 1.5 seconds fade
+    const uint64_t startTicks = SDL_GetTicks();
+
+    while (running) {
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_EVENT_QUIT) running = false;
+        }
+
+        float elapsedSeconds = (SDL_GetTicks() - startTicks) / 1000.0f;
+        float progress = elapsedSeconds / transitionDurationSec;
+
+
+        SlideTransitionManager::cross_fading(renderer, texA, texB, progress);
+
+        if (progress >= 1.0f) {
+            break;
+        }
+
+        SDL_Delay(16); // ~60 FPS
+    }
+}
+
+void ManagePhotos::transition(SDL_Renderer *renderer) {
+    if (l_images_.empty()) return;
+
+    size_t next_image_index = (current_image_index_ + 1) % l_images_.size();
+
+    // Helper to load and resize an image safely within GPU texture limits
+    auto loadTextureResized = [this](SDL_Renderer *rnd, const fs::path &path) -> SDL_Texture* {
+        SDL_Surface *surface = IMG_Load(path.string().c_str());
+        if (!surface) {
+            std::cerr << "IMG_Load failed for " << path << ": " << SDL_GetError() << '\n';
+            return nullptr;
+        }
+
+        SDL_PropertiesID props = SDL_GetRendererProperties(rnd);
+        int maxTexSize = static_cast<int>(SDL_GetNumberProperty(props, SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 2048));
+
+        SDL_Surface *resized = resizeSurface(surface, maxTexSize, maxTexSize);
+        SDL_DestroySurface(surface);
+
+        if (!resized) return nullptr;
+
+        SDL_Texture *texture = SDL_CreateTextureFromSurface(rnd, resized);
+        SDL_DestroySurface(resized);
+        return texture;
+    };
+
+    SDL_Texture *currentTexture = loadTextureResized(renderer, l_images_[current_image_index_]);
+    SDL_Texture *nextTexture = loadTextureResized(renderer, l_images_[next_image_index]);
+
+    if (!currentTexture || !nextTexture) {
+        std::cerr << "Failed to load textures for transition: " << SDL_GetError() << '\n';
+        if (currentTexture) SDL_DestroyTexture(currentTexture);
+        if (nextTexture) SDL_DestroyTexture(nextTexture);
+        return;
+    }
+
+    runSlideshow(renderer, currentTexture, nextTexture);
+
+    SDL_DestroyTexture(currentTexture);
+    SDL_DestroyTexture(nextTexture);
+
+    current_image_index_ = next_image_index;
 }

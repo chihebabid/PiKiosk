@@ -111,6 +111,7 @@ auto main() -> int {
     auto renderer {sdlManager.getRenderer()};
     bool running = true;
     std::size_t imageIndex = 0;
+    int i{};
     while (running) {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
@@ -122,19 +123,22 @@ auto main() -> int {
         managePhotos->display(renderer);
         SDL_RenderPresent(renderer);
         running=myDelay(2000);
-        managePhotos->display(renderer);
-        manageTemp->display(renderer);
-        SDL_RenderPresent(renderer);
-        running=myDelay(2500);
-        managePhotos->display(renderer);
-        manageTemp->display(renderer);
-        manageTemp->displayTime(renderer);
-        SDL_RenderPresent(renderer);
-        running=myDelay(2500);
-        managePhotos->display(renderer);
-        SDL_RenderPresent(renderer);
-        running=myDelay(2000);
-        managePhotos->next();
+        if (i%5==0) {
+            managePhotos->display(renderer);
+            manageTemp->display(renderer);
+            SDL_RenderPresent(renderer);
+            running=myDelay(2500);
+            managePhotos->display(renderer);
+            manageTemp->display(renderer);
+            manageTemp->displayTime(renderer);
+            SDL_RenderPresent(renderer);
+            running=myDelay(2500);
+            managePhotos->display(renderer);
+            SDL_RenderPresent(renderer);
+            running=myDelay(2000);
+        }
+        i=(i+1)%10;
+        managePhotos->transition(renderer);
     }
     return 0;
 }
