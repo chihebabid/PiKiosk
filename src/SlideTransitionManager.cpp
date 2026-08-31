@@ -102,8 +102,8 @@ void SlideTransitionManager::runSlideshow(SDL_Renderer *renderer, SDL_Texture *t
     static int transition_mode{};
     using TransitionFunc = void(*)(SDL_Renderer *, SDL_Texture *, SDL_Texture *, float);
     TransitionFunc liste_modes[] = {
-        &SlideTransitionManager::crossFading, &SlideTransitionManager::wipingHTopToBottom, &SlideTransitionManager::wipingHBottomToTop,
-        &SlideTransitionManager::wipingVLeftToRight,&SlideTransitionManager::wipingVRightToLeft
+        &SlideTransitionManager::crossFading, &SlideTransitionManager::wipingHTopToBottom, &SlideTransitionManager::wipingHTopToBottom, &SlideTransitionManager::wipingHBottomToTop, &SlideTransitionManager::wipingHBottomToTop,
+        &SlideTransitionManager::wipingVLeftToRight,&SlideTransitionManager::wipingVLeftToRight,&SlideTransitionManager::wipingVRightToLeft,&SlideTransitionManager::wipingVRightToLeft
     };
     while (running) {
         SDL_Event event;

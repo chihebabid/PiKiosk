@@ -29,7 +29,6 @@ auto ManageTemp::displayTime(SDL_Renderer *renderer) -> void {
     }
 
 
-
     const auto now = std::chrono::system_clock::now();
     const std::string currentTime = std::format("{:%H:%M}", now);
 
@@ -97,19 +96,23 @@ ManageTemp::~ManageTemp() {
     if (humidity_icon_) {
         SDL_DestroyTexture(humidity_icon_);
     }
+    if (gas_icon_) {
+        SDL_DestroyTexture(gas_icon_);
+    }
     if (font_) {
         TTF_CloseFont(font_);
     }
     TTF_Quit();
 }
 
-void ManageTemp::renderSensorValue(SDL_Renderer *renderer, TTF_Font *font, SDL_Texture *icon, const std::string &value, int x, int y) {
-    if (!renderer || !font || !icon) {
+auto ManageTemp::renderSensorValue(SDL_Renderer *renderer, TTF_Font *font, SDL_Texture *icon, const std::string &value, int x, int y) ->
+    void {
+    if (!renderer or !font or !icon) {
         std::cerr << "Renderer, font, or icon is null. Cannot render sensor value." << std::endl;
         return;
     }
 
-    float iconWidth = 0.0f, iconHeight = 0.0f;
+    float iconWidth{}, iconHeight{};
     SDL_GetTextureSize(icon, &iconWidth, &iconHeight);
 
     // Taille d'affichage de l'icône
@@ -131,19 +134,31 @@ void ManageTemp::renderSensorValue(SDL_Renderer *renderer, TTF_Font *font, SDL_T
         return;
     }
 
-    const float textWidth = static_cast<float>(textSurface->w);
-    const float textHeight = static_cast<float>(textSurface->h);
-    const float spacing = 20.0f;
+    const float textWidth{static_cast<float>(textSurface->w)};
+    const float textHeight{static_cast<float>(textSurface->h)};
+    const float spacing{20.0f};
 
-    SDL_FRect textRect{
-        x + displayIconWidth + spacing,
-        y + (displayIconHeight - textHeight) / 2.0f,
-        textWidth,
-        textHeight
-    };
-
+    SDL_FRect textRect{x + displayIconWidth + spacing, y + (displayIconHeight - textHeight) / 2.0f, textWidth, textHeight};
     SDL_RenderTexture(renderer, textTexture, nullptr, &textRect);
 
     SDL_DestroySurface(textSurface);
     SDL_DestroyTexture(textTexture);
+}
+
+auto ManageTemp::displayGas(SDL_Renderer *renderer) -> void {
+    constexpr uint8_t _r{80}, _g{200}, _b{40};
+    SDL_SetRenderDrawColor(renderer, _r, _g, _b, 150);
+    SDL_FRect rect{80.0f, 280.0f, 400.0f, 280.0f};
+    SDL_RenderFillRect(renderer, &rect);
+
+    if (!gas_icon_) {
+        gas_icon_ = IMG_LoadTexture(renderer, "./icons/gas.png");
+        if (!gas_icon_) {
+            std::cerr << "Erreur gas.png: " << SDL_GetError() << '\n';
+        }
+    }
+
+    const std::string gasText {"Concentration de méthane : "};
+    renderSensorValue(renderer, font_, temperature_icon_, gasText, 100, 300);
+
 }

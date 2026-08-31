@@ -2,8 +2,12 @@
 #include "ManageDisplay.h"
 #include "ManageTemp.h"
 #include "sensors/dht11.h"
+#include "ManageMqttRec.h"
+
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
+
+#include <mqtt/async_client.h>
 
 #include <chrono>
 #include <filesystem>
@@ -77,7 +81,7 @@ SDL_Window *ManageSDL::window_{};
 SDL_Renderer *ManageSDL::renderer_{};
 
 auto myDelay(int milliseconds) -> bool {
-    bool running = true;
+    bool running {true};
     const auto start = std::chrono::steady_clock::now();
     while (running) {
         SDL_Event e;
@@ -96,7 +100,18 @@ auto myDelay(int milliseconds) -> bool {
     }
     return running;
 }
+
+const std::string SEREVER_ADDR {"home.local"};
+const std::string CLIENT_ID {"RPI_HOME_CLIENT"};
+const std::string TOPIC {"sensors/gas"};
 auto main() -> int {
+    // Prepare using Paho MQTT C++
+    mqtt::async_client mqtt_client{SEREVER_ADDR,CLIENT_ID};
+    ManageMqttRec my_mqtt;
+    mqtt_client.set_callback(my_mqtt);
+    mqtt_client.connect()->wait();
+    mqtt_client.subscribe(TOPIC,1);
+    // Prepare SDL
     std::shared_ptr<ManagePhotos> managePhotos=FactoryDisplay::create<ManagePhotos>("./images");
     std::shared_ptr<ManageTemp> manageTemp=FactoryDisplay::create<ManageTemp>();
 
@@ -104,13 +119,13 @@ auto main() -> int {
     sdlManager.create();
     SDL_SetRenderDrawBlendMode(sdlManager.getRenderer(), SDL_BLENDMODE_BLEND);
 
-    pitools::sensors::DHT11 dht11(4);
+    pitools::sensors::DHT11 dht11{4};
     // ------------------------------------------------------------
     // Boucle principale
     // ------------------------------------------------------------
     auto renderer {sdlManager.getRenderer()};
-    bool running = true;
-    std::size_t imageIndex = 0;
+    bool running {true};
+    std::size_t imageIndex{};
     int i{};
     while (running) {
         SDL_Event event;
@@ -120,23 +135,15 @@ auto main() -> int {
             if (event.type == SDL_EVENT_KEY_DOWN && event.key.key == SDLK_ESCAPE)
                 running = false;
         }
-        managePhotos->display(renderer);
-        SDL_RenderPresent(renderer);
-        running=myDelay(2000);
-        if (i%5==0) {
-            managePhotos->display(renderer);
-            manageTemp->display(renderer);
-            SDL_RenderPresent(renderer);
-            running=myDelay(2500);
-            managePhotos->display(renderer);
+        if (i%10==0) {
             manageTemp->display(renderer);
             manageTemp->displayTime(renderer);
             SDL_RenderPresent(renderer);
-            running=myDelay(2500);
-            managePhotos->display(renderer);
-            SDL_RenderPresent(renderer);
-            running=myDelay(2000);
+            running=myDelay(3000);
         }
+        managePhotos->display(renderer);
+        SDL_RenderPresent(renderer);
+        running=myDelay(3600);
         i=(i+1)%10;
         managePhotos->transition(renderer);
     }

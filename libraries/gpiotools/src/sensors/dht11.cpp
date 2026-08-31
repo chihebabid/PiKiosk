@@ -16,7 +16,7 @@
 
 namespace pitools {
     namespace sensors {
-        constexpr auto FREQUENCY = 10000000;
+        constexpr auto FREQUENCY = 50000;
 
         DHT11::DHT11(const uint8_t gpioPin) : mDataPin(gpioPin) {
         }

@@ -16,6 +16,8 @@ public:
 
     auto displayTime(SDL_Renderer *renderer) -> void;
 
+    auto displayGas(SDL_Renderer *renderer) -> void;
+
     auto init() -> void override;
 
     virtual ~ManageTemp() override;
@@ -28,6 +30,7 @@ private:
     TTF_Font *font_{};
     SDL_Texture *temperature_icon_{};
     SDL_Texture *humidity_icon_{};
+    SDL_Texture *gas_icon_{};
     SDL_Texture *clock_icon_{};
     std::unique_ptr<pitools::sensors::DHT11> dht11_{};
 
