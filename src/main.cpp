@@ -1,6 +1,6 @@
 #include "ManagePhotos.h"
 #include "ManageDisplay.h"
-#include "ManageTemp.h"
+#include "EnvironmentDisplayManager.h"
 #include "sensors/dht11.h"
 #include "ManageMqttRec.h"
 
@@ -28,7 +28,7 @@ auto init() -> void {
 
 class ManageSDL {
 public:
-    // 1. Supprimer le constructeur de copie et l'opérateur d'affectation
+
     ManageSDL(const ManageSDL &) = delete;
 
     ManageSDL &operator=(const ManageSDL &) = delete;
@@ -113,7 +113,7 @@ auto main() -> int {
     mqtt_client.subscribe(TOPIC,1);
     // Prepare SDL
     std::shared_ptr<ManagePhotos> managePhotos=FactoryDisplay::create<ManagePhotos>("./images");
-    std::shared_ptr<ManageTemp> manageTemp=FactoryDisplay::create<ManageTemp>();
+    std::shared_ptr<EnvironmentDisplayManager> manageTemp=FactoryDisplay::create<EnvironmentDisplayManager>();
 
     ManageSDL &sdlManager{ManageSDL::getInstance()};
     sdlManager.create();
@@ -125,7 +125,7 @@ auto main() -> int {
     // ------------------------------------------------------------
     auto renderer {sdlManager.getRenderer()};
     bool running {true};
-    std::size_t imageIndex{};
+
     int i{};
     while (running) {
         SDL_Event event;
@@ -135,11 +135,18 @@ auto main() -> int {
             if (event.type == SDL_EVENT_KEY_DOWN && event.key.key == SDLK_ESCAPE)
                 running = false;
         }
-        if (i%10==0) {
-            manageTemp->display(renderer);
-            manageTemp->displayTime(renderer);
+        if (i%8==0) {
+            static bool first_time{true};
+            if (first_time) {
+                manageTemp->display(renderer);
+                manageTemp->displayTime(renderer);
+            }
+            else {
+                manageTemp->displayGas(renderer);
+            }
             SDL_RenderPresent(renderer);
-            running=myDelay(3000);
+            running=myDelay(3500);
+            first_time = !first_time;
         }
         managePhotos->display(renderer);
         SDL_RenderPresent(renderer);

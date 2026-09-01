@@ -13,7 +13,7 @@ find_path(GPIOD_INCLUDE_DIR
 find_library(GPIOD_LIBRARY NAMES gpiod)
 
 add_executable(kiosk
-    main.cpp ManagePhotos.cpp ManageTemp.cpp SlideTransitionManager.cpp
+    main.cpp ManagePhotos.cpp EnvironmentDisplayManager.cpp SlideTransitionManager.cpp
         ManageMqttRec.cpp
 )
 

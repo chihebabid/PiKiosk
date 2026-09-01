@@ -9,7 +9,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
 
-class ManageTemp : public ManageDisplay {
+class EnvironmentDisplayManager : public ManageDisplay {
 public:
 
     auto display(SDL_Renderer *renderer) -> void override;
@@ -20,10 +20,11 @@ public:
 
     auto init() -> void override;
 
-    virtual ~ManageTemp() override;
+    virtual ~EnvironmentDisplayManager() override;
 
 private:
-    void renderSensorValue(SDL_Renderer *renderer, TTF_Font *font, SDL_Texture *icon, const std::string &value, int x, int y);
+    void renderSensorValue(SDL_Renderer *renderer, TTF_Font *font, SDL_Texture *icon, const std::string &value, int x, int y,uint32_t
+        icon_width=160, uint32_t icon_height=100,SDL_Color text_color={255,255,255,255});
 
     int temp_{};
     int humidity_{};

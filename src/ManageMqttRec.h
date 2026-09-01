@@ -9,6 +9,9 @@
 class ManageMqttRec : public mqtt::callback {
 public:
     void message_arrived(mqtt::const_message_ptr msg) override;
+    static auto getGasValue() -> std::optional<uint32_t>;
+private:
+    static std::optional<uint32_t> gas_value_;
 };
 
 
