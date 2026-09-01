@@ -154,5 +154,7 @@ auto main() -> int {
         i=(i+1)%10;
         managePhotos->transition(renderer);
     }
+    mqtt_client.unsubscribe(TOPIC)->wait();
+    mqtt_client.disconnect()->wait();
     return 0;
 }
