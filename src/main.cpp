@@ -113,7 +113,7 @@ auto main() -> int {
     mqtt_client.subscribe(TOPIC,1);
     // Prepare SDL
     std::shared_ptr<ManagePhotos> managePhotos=FactoryDisplay::create<ManagePhotos>("./images");
-    std::shared_ptr<EnvironmentDisplayManager> manageTemp=FactoryDisplay::create<EnvironmentDisplayManager>();
+    std::shared_ptr<EnvironmentDisplayManager> display_manager=FactoryDisplay::create<EnvironmentDisplayManager>();
 
     ManageSDL &sdlManager{ManageSDL::getInstance()};
     sdlManager.create();
@@ -135,14 +135,14 @@ auto main() -> int {
             if (event.type == SDL_EVENT_KEY_DOWN && event.key.key == SDLK_ESCAPE)
                 running = false;
         }
-        if (i%8==0) {
+        if (i==9) {
             static bool first_time{true};
             if (first_time) {
-                manageTemp->display(renderer);
-                manageTemp->displayTime(renderer);
+                display_manager->display(renderer);
+                display_manager->displayTime(renderer);
             }
             else {
-                manageTemp->displayGas(renderer);
+                display_manager->displayGas(renderer);
             }
             SDL_RenderPresent(renderer);
             running=myDelay(3500);
