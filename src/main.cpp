@@ -103,14 +103,17 @@ auto myDelay(int milliseconds) -> bool {
 
 const std::string SEREVER_ADDR {"home.local"};
 const std::string CLIENT_ID {"RPI_HOME_CLIENT"};
-const std::string TOPIC {"sensors/gas"};
+const std::string TOPICS[] {"sensors/gas","commands"};
 auto main() -> int {
     // Prepare using Paho MQTT C++
     mqtt::async_client mqtt_client{SEREVER_ADDR,CLIENT_ID};
     ManageMqttRec my_mqtt;
     mqtt_client.set_callback(my_mqtt);
     mqtt_client.connect()->wait();
-    mqtt_client.subscribe(TOPIC,1);
+    for (const auto &topic : TOPICS) {
+        mqtt_client.subscribe(topic, 1)->wait();
+    }
+
     // Prepare SDL
     std::shared_ptr<ManagePhotos> managePhotos=FactoryDisplay::create<ManagePhotos>("./images");
     std::shared_ptr<EnvironmentDisplayManager> display_manager=FactoryDisplay::create<EnvironmentDisplayManager>();
@@ -126,7 +129,6 @@ auto main() -> int {
     auto renderer {sdlManager.getRenderer()};
     bool running {true};
 
-    int i{};
     while (running) {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
@@ -135,26 +137,28 @@ auto main() -> int {
             if (event.type == SDL_EVENT_KEY_DOWN && event.key.key == SDLK_ESCAPE)
                 running = false;
         }
-        if (i==9) {
-            static bool first_time{true};
-            if (first_time) {
+
+        managePhotos->display(renderer);
+        SDL_RenderPresent(renderer);
+        running=myDelay(3600);
+
+        managePhotos->transition(renderer);
+        if (ManageMqttRec::getRefCurrentCommand()!=Command::NONE) {
+            if (ManageMqttRec::getRefCurrentCommand()==Command::SHOW_TEMP) {
                 display_manager->display(renderer);
                 display_manager->displayTime(renderer);
             }
-            else {
+            else if (ManageMqttRec::getRefCurrentCommand()==Command::SHOW_GAS) {
                 display_manager->displayGas(renderer);
             }
             SDL_RenderPresent(renderer);
             running=myDelay(3500);
-            first_time = !first_time;
+            ManageMqttRec::getRefCurrentCommand()=Command::NONE;
         }
-        managePhotos->display(renderer);
-        SDL_RenderPresent(renderer);
-        running=myDelay(3600);
-        i=(i+1)%10;
-        managePhotos->transition(renderer);
     }
-    mqtt_client.unsubscribe(TOPIC)->wait();
+    for (const auto &topic : TOPICS) {
+        mqtt_client.unsubscribe(topic)->wait();
+    }
     mqtt_client.disconnect()->wait();
     return 0;
 }
