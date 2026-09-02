@@ -105,7 +105,7 @@ const std::string SEREVER_ADDR {"home.local"};
 const std::string CLIENT_ID {"RPI_HOME_CLIENT"};
 const std::string TOPICS[] {"sensors/gas","commands"};
 auto main() -> int {
-    // Prepare using Paho MQTT C++
+
     mqtt::async_client mqtt_client{SEREVER_ADDR,CLIENT_ID};
     ManageMqttRec my_mqtt;
     mqtt_client.set_callback(my_mqtt);
@@ -143,17 +143,20 @@ auto main() -> int {
         running=myDelay(3600);
 
         managePhotos->transition(renderer);
-        if (ManageMqttRec::getRefCurrentCommand()!=Command::NONE) {
-            if (ManageMqttRec::getRefCurrentCommand()==Command::SHOW_TEMP) {
-                display_manager->display(renderer);
-                display_manager->displayTime(renderer);
-            }
-            else if (ManageMqttRec::getRefCurrentCommand()==Command::SHOW_GAS) {
-                display_manager->displayGas(renderer);
+        if (ManageMqttRec::getCurrentCommand()!=Command::NONE) {
+            switch (ManageMqttRec::getCurrentCommand())  {
+                case Command::SHOW_TEMP:
+                    display_manager->display(renderer);
+                    display_manager->displayTime(renderer);
+                    break;
+
+                case Command::SHOW_GAS:
+                    display_manager->displayGas(renderer);
+                    break;
             }
             SDL_RenderPresent(renderer);
             running=myDelay(3500);
-            ManageMqttRec::getRefCurrentCommand()=Command::NONE;
+            ManageMqttRec::resetCommand();
         }
     }
     for (const auto &topic : TOPICS) {

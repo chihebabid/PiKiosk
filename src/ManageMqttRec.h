@@ -11,7 +11,8 @@ class ManageMqttRec : public mqtt::callback {
 public:
     auto message_arrived(mqtt::const_message_ptr msg) -> void override;
     static auto getGasValue() -> std::optional<uint32_t>;
-    static auto getRefCurrentCommand() -> Command&;
+    static auto getCurrentCommand() -> Command;
+    static auto resetCommand() -> void;
 private:
     static std::optional<uint32_t> gas_value_;
     static Command current_command_;

@@ -33,8 +33,12 @@ auto ManageMqttRec::getGasValue() -> std::optional<uint32_t> {
     return gas_value_;
 }
 
-auto ManageMqttRec::getRefCurrentCommand() -> Command& {
+auto ManageMqttRec::getCurrentCommand() -> Command {
     return current_command_;
+}
+
+auto ManageMqttRec::resetCommand() -> void {
+    current_command_=Command::NONE;
 }
 
 std::optional<uint32_t> ManageMqttRec::gas_value_;
