@@ -10,7 +10,6 @@ namespace pitools {
         return (toHigh - toLow) * (value - fromLow) / (fromHigh - fromLow) + toLow;
     }
 
-
     GpioManager &GpioManager::getInstance() {
         // Guaranteed to be thread-safe in C++11 and later
         static GpioManager instance;

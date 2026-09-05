@@ -62,7 +62,7 @@ namespace pitools {
             uint64_t data{0};
             mError = DHT11_ERRORS::NO_ERROR;
             SendStartSignal();
-            m_line_request_->set_value(mDataPin, gpiod::line::value::ACTIVE); //gpioSetMode(mDataPin, PI_INPUT);
+            m_line_request_->set_value(mDataPin, gpiod::line::value::ACTIVE);
             try {
                 WaitForLow();
                 WaitForHigh();
